@@ -10,18 +10,29 @@
 
 <body>
 
-    <p id="resultado" style="text-align: center; font-size: 50px;">P</p>
-    <div id="camera"></div>
+    <p id="resultado" style="display: none;"></p>
+    <input type="text" id="pito" value=""> <input type="button" id="btn" value="Buscar"/> <input type="button" id="btntextoenviar" value="Enviar">
+    <div id="camera" style="display: none;"></div>
+    
 
     <script src="quagga.min.js"></script>
     <script>
         var codigo = 0;
+        var _scannerIsRunning = false;
 
+
+        function Iniciar(){
+        document.getElementById("camera").style.display = "block";
         Quagga.init({
             inputStream: {
                 name: "Live",
                 type: "LiveStream",
-                target: document.querySelector('#camera')    // Or '#yourElement' (optional)
+                target: document.querySelector('#camera'),    // Or '#yourElement' (optional)
+                    constraints: {
+                        width: 480,
+                        height: 320,
+                        facingMode: "environment"
+                    },
             },
             decoder: {
               readers: [
@@ -43,6 +54,7 @@
             }
             console.log("Initialization finished. Ready to start");
             Quagga.start();
+            _scannerIsRunning = true;
         });
 
         Quagga.onDetected(function (data) {
@@ -54,16 +66,33 @@
                 codigo = 0;
             }
             document.querySelector('#resultado').innerText = data.codeResult.code;
+            document.querySelector('#pito').value = data.codeResult.code;
             console.log(codigo);
 
-            if (codigo >=10) {
+            if (codigo >=15) {
                 codigo = 0;
+                _scannerIsRunning = false;
                 Quagga.stop();
-                window.open('https://www.tiendasjumbo.co/'+data.codeResult.code, '_blank');
+                document.getElementById("camera").style.display = "none";
+            
             }
             
         });
+    }
+
+    document.getElementById("btn").addEventListener("click", function () {
+            if (_scannerIsRunning) {
+                Quagga.stop();
+                _scannerIsRunning = false;
+                document.getElementById("camera").style.display = "none";
+            } else {
+                Iniciar();
+            }
+        });  
         
+    document.getElementById("btntextoenviar").addEventListener("click", function () {
+        window.open('https://www.tiendasjumbo.co/'+document.querySelector('#pito').value, '_blank');
+        });          
         
     </script>
 
